@@ -1,0 +1,53 @@
+<?php
+
+
+use Drupal\Core\Config\ConfigFactoryInterface;  
+use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Path\PathValidatorInterface;
+use Drupal\Core\Routing\RequestContext;
+use Drupal\path_alias\AliasManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Messenger\MessengerTrait;
+
+function node_json_data_form_alter(&$form, &$form_state, $form_id) {
+ 
+ //creating config form to basic site info page
+
+  if ($form_id == 'system_site_information_settings') {
+
+    	$form['apiKey'] = [
+          '#type' => 'details',
+          '#title' => t('Api key'),
+          '#open' => TRUE,
+        ];
+        $form['apiKey']['key'] = [
+          '#type' => 'textfield',
+          '#title' => t('Api key'),
+
+        ];
+
+        
+        $form['#validate'][] = 'Node_Json_Data_form_validate';
+        $form['#submit'][] = 'Node_Json_Data_form_submit';	
+    	}
+      return $form;
+    }
+
+// validating the field apikey data
+
+function node_json_data_form_validate($form, FormStateInterface &$form_state) {
+  if (strlen($form_state->getValue('key')) == 0) {
+        $form_state->setErrorByName('key', t('No API key'));
+      }
+
+       }
+
+//adding api to config form
+       
+function node_json_data_form_submit(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  $key =$form_state->getValue('key'); 
+  $config = \Drupal::service('config.factory')->getEditable('system.site');
+  $config->set('api',$key )->save();
+ 
+}
